@@ -1,0 +1,2 @@
+- debug:
+    msg: "Variable role_defaults : {{ my_role_defaults_value }}"
