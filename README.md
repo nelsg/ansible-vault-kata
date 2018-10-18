@@ -3,6 +3,7 @@
 Purger les fichiers
 
 ```bash
+deactivate
 git checkout .
 git clean -xdf
 ```
@@ -27,14 +28,13 @@ ansible -version
 Recharger l'environnement
 
 ```bash
-deactivate
 source vansible24/bin/activate
 ansible -version
 ```
 
 ## Première exécution du playbook
 
-* Exécuter le playbook : `ansible-playbook -e @files/extra_vars.yml site.yml`
+* Exécuter le playbook : `ansible-playbook site.yml`
 * Pas besoin d'indiquer l'inventaire : `ansible-config dump`
 
 Explications de ca qui est affiché
