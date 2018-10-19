@@ -25,7 +25,7 @@ Créer un environnement virtuel pour ansible-2.5.10
 virtualenv --no-site-packages vansible25
 source vansible25/bin/activate
 pip install ansible==2.5.10
-ansible -version
+ansible --version
 ```
 
 Recharger l'environnement
@@ -40,10 +40,19 @@ Pourquoi 2.5 ? => [releases](releases)
 ## Première exécution du playbook
 
 * Exécuter le playbook : `ansible-playbook site.yml`
-* Pas besoin d'indiquer l'inventaire : `ansible-config dump`
+* Expliquer ce qui est affiché, montrer la variable `NOT DEFINED`
 * Exécuter le playbook avec l'extra vars : `ansible-playbook site.yml -e @files/extra_vars.yml`
+* Pas besoin d'indiquer l'inventaire avec la conf : `ansible-config dump`
 
-Explications de ce qui est affiché
+## Commandes ansible-vault
+
+* Afficher le fichier : `cat files/extra_vars.yml`
+* Chiffrement du fichier : `ansible-vault encrypt files/extra_vars.yml`
+* Afficher le fichier : `cat files/extra_vars.yml`
+* Afficher le fichier en clair : `ansible-vault view files/extra_vars.yml`
+* Editer le fichier en clair : `ansible-vault edit files/extra_vars.yml`
+* Changer le mot de passe du vault : `ansible-vault rekey files/extra_vars.yml`
+* Afficher le fichier en clair : `ansible-vault view files/extra_vars.yml`
 
 ## Consultation de la configuration
 

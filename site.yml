@@ -5,18 +5,18 @@
     - notdefined: NOT DEFINED
   vars_files:
     - files/vars_files.yml
-  tasks:
-  - include_vars: files/include_vars.yml
-  - debug:
-      msg: "Variable extra_vars : {{ my_extra_vars_value | default(notdefined) }}"
-  - debug:
-      msg: "Variable include_vars : {{ my_include_vars_value }}"
-  - debug:
-      msg: "Variable vars_files : {{ my_vars_files_value }}"
-  - debug:
-      msg: "Variable group_vars : {{ my_group_vars_value }}"
-  - copy:
-      src: "files/certificat.cer"
-      dest: "out/certificat.cer"
   roles:
-  - kata
+    - kata
+  tasks:
+    - include_vars: files/include_vars.yml
+    - debug:
+        msg: "Variable extra_vars : {{ my_extra_vars_value | default(notdefined) }}"
+    - debug:
+        msg: "Variable include_vars : {{ my_include_vars_value }}"
+    - debug:
+        msg: "Variable vars_files : {{ my_vars_files_value }}"
+    - debug:
+        msg: "Variable group_vars : {{ my_group_vars_value }}"
+    - copy:
+        src: "files/certificat.cer"
+        dest: "out/certificat.cer"
