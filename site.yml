@@ -3,8 +3,6 @@
   gather_facts: no
   vars:
     - notdefined: NOT DEFINED
-    - defaults:
-        vault_password_file: pass
   vars_files:
     - files/vars_files.yml
   roles:
