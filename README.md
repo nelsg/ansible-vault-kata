@@ -145,9 +145,48 @@ Si vous ne l'avez pas remarqué, j'utilise le même mot de passe depuis le débu
 * On peut exécuter le playbook comme initialement : `ansible-playbook site.yml -e @files/extra_vars.yml`
 * On peut utiliser également des `@prompt` dans *ansible.cfg*
 
-## Utilisation des clés de vault-id
+## Utilisation des clés pour les vault-id
 
 Les `vault-id` ont été introduits avec la version 2.4 d'ansible. C'est d'ailleurs devenu la manière officielle de fournir des mots de passe, exit dont `--ask-vault-pass` et `--vault-password-file`.
 
 On a vu que l'on pouvait en utiliser plusieurs `vault-id` et qu'ansible effectue des tentatives par force brute.
 Voyons comment amméliorer cela.
+
+* Préparation en supprimant les fichiers de mots de passes
+* Restaurer la conf : `git checkout .`
+
+### Chiffrer les données :
+
+**Chiffrement du fichier extra**
+
+* Chiffrer le fichier *files/extra_vars.yml* comme avant, mais avec le `vault-id` : `ansible-vault encrypt --vault-id @prompt files/extra_vars.yml`
+* Afficher le fichier : `cat files/extra_vars.yml`
+* Déchiffrer : `ansible-vault decrypt --vault-id @prompt files/extra_vars.yml`
+* Chiffer à nouveau, mais avec la clé `extra` : `ansible-vault encrypt --vault-id demo@prompt files/extra_vars.yml`
+* Afficher le fichier : `cat files/extra_vars.yml`
+* La version est passé de `1.1` à `1.2` et on trouve la clé `demo` dans le fichier
+* Placer le mot de passe dans le fichier *pass_demo* : `echo 1234 >> pass_demo`
+
+**Chiffrement de la valeur dans le fichier vars**
+
+* Chiffrer la chaine `vars_files` de caractère avec la clé `demo` et le mot de passe dans le fichier : `ansible-vault encrypt_string "vars_files DEFINED encrypted" --name 'my_vars_files_value' --vault-id demo@pass_demo`
+* Essayer le playbook : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-id demo@pass_demo`
+
+**Chiffrement du fichier include**
+
+* Créer le fichier *pass_vault* : `echo azerty >> pass_vault`
+* Chiffrer le fichier : `ansible-vault encrypt --vault-id vault@pass_vault files/include_vars.yml`
+* Essayer le playbook : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-id demo@pass_demo --vault-id vault@pass_vault`
+
+Mais j'ai menti, ça marche aussi avec :
+* `--vault-id pass_demo --vault-id pass_vault`
+* `--vault-id toto@pass_demo --vault-id tata@pass_vault`
+* `--vault-id toto@pass_demo --vault-id toto@pass_vault`
+
+**Associer la clé au vault**
+
+* Regarder `vault_id_match` dans `ansible-config list`
+* L'ajouter dans *ansible.cfg* : `echo "vault_id_match=1" >> ansible.cfg`
+* Maintenant, seul fonctionne : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-id demo@pass_demo --vault-id vault@pass_vault`
+
+## Utilisation de scripts pour les vault-id
