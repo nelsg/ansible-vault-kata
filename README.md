@@ -189,4 +189,33 @@ Mais j'ai menti, ça marche aussi avec :
 * L'ajouter dans *ansible.cfg* : `echo "vault_id_match=1" >> ansible.cfg`
 * Maintenant, seul fonctionne : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-id demo@pass_demo --vault-id vault@pass_vault`
 
+## Chiffrement de tous les fichiers
+
+* Chiffrer le fichier *group_vars/all.yml* : `ansible-vault encrypt --vault-id vault@pass_vault group_vars/all.yml`
+* Chiffrer le fichier *files/certificat.cer* : `ansible-vault encrypt --vault-id demo@pass_demo files/certificat.cer`
+* Chiffrement du default du rôle *roles/kata/defaults/main.yml* : `ansible-vault encrypt --vault-id vault@pass_vault roles/kata/defaults/main.yml`
+
+* On essaye : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-id pass_demo --vault-id pass_vault`
+
+* On continue : `ansible-vault encrypt --vault-id demo@pass_demo roles/kata/tasks/main.yml`
+* Ca fonctionne ..
+
+* Et le playbook ? : `ansible-vault encrypt --vault-id demo@pass_demo site.yml`
+* Ca fonctionne ..
+
+* On peut tout chiffrer, sauf *ansible.cfg*
+
 ## Utilisation de scripts pour les vault-id
+
+* Restaure tout : `git checkout .`
+* Chiffrement du fichier `files/extra_vars.yml` : `ansible-vault encrypt --vault-id vault@pass_demo files/extra_vars.yml`
+* Editez le fichier `pass_demo` et mettre :
+  ```python
+  #!/usr/bin/python
+  print("1234")
+  ```
+* On essaye : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-id pass_demo` => ERREUR
+* On ajoute les droits d'exécution : `chmod +x pass_demo`
+* On essaye : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-id pass_demo` => OK
+
+### Que mettre dans le script
