@@ -56,42 +56,40 @@ Comment utiliser votre vault avec les outils ansible comme les commandes `ansibl
 
 * Chiffrement du fichier : `ansible-vault encrypt files/extra_vars.yml`
 * Exécuter le playbook : `ansible-playbook site.yml -e @files/extra_vars.yml` => ERREUR
+* On va simplifier la commande en ajoutant `files/extra_vars.yml` aux `vars_files` de *site.yml*.
+* Exécuter le playbook : `ansible-playbook site.yml` => ERREUR
 
 ### Ansible doit demander le mot de passe
 
 **Via la ligne de commande : --ask-vault-pass**
 
-* `ansible-playbook site.yml -e @files/extra_vars.yml --ask-vault-pass`
+* `ansible-playbook site.yml --ask-vault-pass`
 
 **Via la configuration ini : [defaults] ask_vault_pass**
 
 * Rechercher `ask_vault_pass` avec `ansible-config list`
 * Ajouter la ligne `ask_vault_pass = True` au fichier *ansible.cfg*
-* Exécuter le playbook : `ansible-playbook site.yml -e @files/extra_vars.yml`
+* Exécuter le playbook : `ansible-playbook site.yml`
 * Supprimer la ligne `ask_vault_pass = True` du fichier *ansible.cfg*
 
 **Via la variable d'environnement : ANSIBLE_ASK_VAULT_PASS**
 
 * Rechercher `ask_vault_pass` avec `ansible-config list`
-* On peut aussi utiliser une variable d'environnement `ANSIBLE_ASK_VAULT_PASS=1 ansible-playbook site.yml -e @files/extra_vars.yml`
+* On peut aussi utiliser une variable d'environnement `ANSIBLE_ASK_VAULT_PASS=1 ansible-playbook site.yml`
 
 ### Donner le mot de passe à Ansible dans un fichier
 
 **Via la ligne de commande : --vault-password-file**
 
-* `ansible-playbook site.yml -e @files/extra_vars.yml --vault-password-file pass` => ERREUR
+* `ansible-playbook site.yml --vault-password-file pass` => ERREUR
 * Créer le fichier `echo 1234 > pass`
-* `ansible-playbook site.yml -e @files/extra_vars.yml --vault-password-file pass`
+* `ansible-playbook site.yml --vault-password-file pass`
 
 **Autres moyens**
 
 * Variable d'environnement : `env: ANSIBLE_VAULT_PASSWORD_FILE`
 * Paramètre dans le fichier *ansible.cfg* : `ini: key: vault_password_file, section: defaults`
 * Paramètre yaml : `yaml: key: defaults.vault_password_file`
-
-### Donner le mot de passe à Ansible dans un script python
-
->TODO : Voir comment le mettre en place
 
 ## Chiffrement d'une string
 
@@ -105,7 +103,7 @@ Chiffre un fichier complet n'est pas forcément pertinent. Une solution peut êt
   `ansible-vault encrypt_string "vars_files DEFINED encrypted" --name 'my_vars_files_value' --vault-password-file pass`
 * Prendre le contenu et la mettre dans le fichier *files/vars_files.yml*
 * Ansible reconnait l'entête `!vault |` et déchiffre ce qui suit
-* Exécuter le playbook : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-password-file pass`
+* Exécuter le playbook : `ansible-playbook site.yml --vault-password-file pass`
 * L'argorithme utilise ce que l'on appelle une fonction de salage, cela permet de renforcer la sécurité des informations en ajoutant une donnée qui permet d'éviter d'avoir la même empreinte. Le but est de compliquer les attaques s'appuyant sur l'analyse fréquentielle, la force brute
 * Exécuter plusieurs fois la commande :
   `ansible-vault encrypt_string "vars_files DEFINED encrypted" --name 'my_vars_files_value' --vault-password-file pass`
@@ -120,21 +118,21 @@ Chiffre un fichier complet n'est pas forcément pertinent. Une solution peut êt
 Si vous ne l'avez pas remarqué, j'utilise le même mot de passe depuis le début, comment faire si l'on a un deuxième mot de passe à gérer ?
 
 * Chiffrement du fichier *files/include_vars.yml* : `ansible-vault encrypt files/include_vars.yml`
-* Exécution du playbook : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-password-file pass` => ERREUR
-* Demande du mot de passe en plus : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-password-file pass --ask-vault-pass` => ERREUR
-* Demande du mot de passe seul : `ansible-playbook site.yml -e @files/extra_vars.yml --ask-vault-pass` => ERREUR
+* Exécution du playbook : `ansible-playbook site.yml --vault-password-file pass` => ERREUR
+* Demande du mot de passe en plus : `ansible-playbook site.yml --vault-password-file pass --ask-vault-pass` => ERREUR
+* Demande du mot de passe seul : `ansible-playbook site.yml --ask-vault-pass` => ERREUR
 
 ### Utilisation de l'argument vault-id
 
 * Pour résoudre le problème ci-dessus, on utilise l'argument `--vault-id`
 * On peut en utiliser autant que l'on veut, il faut voir cet argument comme un moyen de fournir un ou plusieurs mots de passe à ansible
-* Par exemple, demander la saisie de deux mot de passe : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-id @prompt --vault-id @prompt`
+* Par exemple, demander la saisie de deux mot de passe : `ansible-playbook site.yml --vault-id @prompt --vault-id @prompt`
 * Le `@prompt` demande à ansible de demander un mot de passe
 * Si pas de `@`, c'est interprété comme un nom de fichier
 * Créer un fichier avec l'autre mot de passe : `echo azerty > pass2`
-* L'utiliser dans la ligne de commande : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-id pass --vault-id pass2`
-* L'ordre n'a pas d'importance : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-id pass2 --vault-id pass`
-* On peut vraiment empiler les mots de passe. Ansible utilise tous les mots de passe dont il dispose pour déchiffrer : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-id pass --vault-id pass2 --vault-id @prompt`
+* L'utiliser dans la ligne de commande : `ansible-playbook site.yml --vault-id pass --vault-id pass2`
+* L'ordre n'a pas d'importance : `ansible-playbook site.yml --vault-id pass2 --vault-id pass`
+* On peut vraiment empiler les mots de passe. Ansible utilise tous les mots de passe dont il dispose pour déchiffrer : `ansible-playbook site.yml --vault-id pass --vault-id pass2 --vault-id @prompt`
 * Il essaye toutes les mots de passe, dans l'ordre de saisie dans la ligne de commande, jusqu'à en trouver un qui fonctionne
 
 ### Avec le fichier *ansible.cfg*
@@ -142,7 +140,7 @@ Si vous ne l'avez pas remarqué, j'utilise le même mot de passe depuis le débu
 * Regardons comment utiliser vault-id : `ansible-config list`
 * Rechercher `vault_identity_list` : on peut utiliser une variable d'environnement, un yaml ou dans le fichier ini. Le type est une liste
 * Ajout dans le fichier de configuration : `echo "vault_identity_list=pass,pass2" >> ansible.cfg`
-* On peut exécuter le playbook comme initialement : `ansible-playbook site.yml -e @files/extra_vars.yml`
+* On peut exécuter le playbook comme initialement : `ansible-playbook site.yml`
 * On peut utiliser également des `@prompt` dans *ansible.cfg*
 
 ## Utilisation des clés pour les vault-id
@@ -170,13 +168,13 @@ Voyons comment amméliorer cela.
 **Chiffrement de la valeur dans le fichier vars**
 
 * Chiffrer la chaine `vars_files` de caractère avec la clé `demo` et le mot de passe dans le fichier : `ansible-vault encrypt_string "vars_files DEFINED encrypted" --name 'my_vars_files_value' --vault-id demo@pass_demo`
-* Essayer le playbook : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-id demo@pass_demo`
+* Essayer le playbook : `ansible-playbook site.yml --vault-id demo@pass_demo`
 
 **Chiffrement du fichier include**
 
 * Créer le fichier *pass_vault* : `echo azerty >> pass_vault`
 * Chiffrer le fichier : `ansible-vault encrypt --vault-id vault@pass_vault files/include_vars.yml`
-* Essayer le playbook : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-id demo@pass_demo --vault-id vault@pass_vault`
+* Essayer le playbook : `ansible-playbook site.yml --vault-id demo@pass_demo --vault-id vault@pass_vault`
 
 Mais j'ai menti, ça marche aussi avec :
 * `--vault-id pass_demo --vault-id pass_vault`
@@ -187,7 +185,7 @@ Mais j'ai menti, ça marche aussi avec :
 
 * Regarder `vault_id_match` dans `ansible-config list`
 * L'ajouter dans *ansible.cfg* : `echo "vault_id_match=1" >> ansible.cfg`
-* Maintenant, seul fonctionne : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-id demo@pass_demo --vault-id vault@pass_vault`
+* Maintenant, seul fonctionne : `ansible-playbook site.yml --vault-id demo@pass_demo --vault-id vault@pass_vault`
 
 ## Chiffrement de tous les fichiers
 
@@ -195,7 +193,7 @@ Mais j'ai menti, ça marche aussi avec :
 * Chiffrer le fichier *files/certificat.cer* : `ansible-vault encrypt --vault-id demo@pass_demo files/certificat.cer`
 * Chiffrement du default du rôle *roles/kata/defaults/main.yml* : `ansible-vault encrypt --vault-id vault@pass_vault roles/kata/defaults/main.yml`
 
-* On essaye : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-id pass_demo --vault-id pass_vault`
+* On essaye : `ansible-playbook site.yml --vault-id pass_demo --vault-id pass_vault`
 
 * On continue : `ansible-vault encrypt --vault-id demo@pass_demo roles/kata/tasks/main.yml`
 * Ca fonctionne ..
@@ -214,8 +212,29 @@ Mais j'ai menti, ça marche aussi avec :
   #!/usr/bin/python
   print("1234")
   ```
-* On essaye : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-id pass_demo` => ERREUR
+* On essaye : `ansible-playbook site.yml --vault-id pass_demo` => ERREUR
 * On ajoute les droits d'exécution : `chmod +x pass_demo`
-* On essaye : `ansible-playbook site.yml -e @files/extra_vars.yml --vault-id pass_demo` => OK
+* On essaye : `ansible-playbook site.yml --vault-id pass_demo` => OK
 
 ### Que mettre dans le script
+
+>TODO
+
+* https://docs.ansible.com/ansible/2.5/plugins/lookup/keyring.html
+
+## Protéger les logs
+
+* On peut protéger ce qui est affiché avec `no_log` : Ajouter `no_log: yes` sur une tâche : `ansible-playbook site.yml`
+* Par contre, on ne protège pas la variable du mode debug: `ANSIBLE_DEBUG=1 ansible-playbook site.yml`
+* Ni contre le debuggage :
+  * Ajouter dans le playbook `strategy: debug`
+  * Ajouter un échec avec `failed_when: true`
+  * Exécuter le playbook `ansible-playbook site.yml`
+  * Exécuter les commandes :
+    * `p vars`
+    * `p vars['hostvars']`
+    * `p vars['hostvars']['localhost']['my_group_vars_value']`
+
+##
+
+>TODO : Supprimer les lignes de commande à rallonge
