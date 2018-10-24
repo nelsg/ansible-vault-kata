@@ -29,6 +29,8 @@
 
 ## Première exécution du playbook
 
+* Je n'ai qu'une machine dans mon inventaire : `ansible-inventory --graph`
+* Toutes les variables de mon hôte : `ansible -m debug -a "var=hostvars['hostname']" localhost`
 * Exécuter le playbook : `ansible-playbook site.yml`
 * Expliquer ce qui est affiché, montrer la variable `NOT DEFINED`
 * Exécuter le playbook avec l'extra vars : `ansible-playbook site.yml -e @files/extra_vars.yml`
@@ -235,6 +237,12 @@ Mais j'ai menti, ça marche aussi avec :
     * `p vars['hostvars']`
     * `p vars['hostvars']['localhost']['my_group_vars_value']`
 
-##
+## Ce qu'il faut savoir
+
+* Si vous perdez votre mot de passe, vous perdez vos données
+* Pour ceux qui travaille avec git ou autre :
+  * Ne commitez et poussez pas des données sensibles, elles restent dans l'historique
+  * Si vous ouvrez un vault avec `edit`, le fichier est modifié même si vous ne changez rien, préférer `view` pour l'affichage
+  * Même chiffrées, vous n'allez pas mettre vos données sur un git public
 
 >TODO : Supprimer les lignes de commande à rallonge
